@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { TextField, MenuItem, FormControl, InputLabel, Select, Paper, Button } from '@mui/material';
+import { TextField, MenuItem, CircularProgress, FormControl, InputLabel, Select, Paper, Button } from '@mui/material';
 
 const DynamicDropdowns = () => {
     const [charCount, setCharCount] = useState(0);
     const [character, setCharacter] = useState(null);
     const [message, setMessage] = useState(null);
     const [messageList, setMessageList] = useState([]);
+    const [imageUrl, setImageUrl] = useState(null);
+    const [loading, setLoading] = useState(false);
+
 
     const styles = {
         container: {
@@ -66,6 +69,7 @@ const DynamicDropdowns = () => {
     };
 
     const handleImage = () => {
+        setLoading(true); // Start loading
         var myHeaders = new Headers();
         myHeaders.append("Accept", "image/png");
         myHeaders.append("Authorization", "Bearer VknySbLLTUjbxXAXCjyfaFIPwUTCeRXbFSOjwRiCxsxFyhbnGjSFalPKrpvvDAaPVzWEevPljilLVDBiTzfIbWFdxOkYJxnOPoHhkkVGzAknaOulWggusSFewzpqsNWM");
@@ -84,8 +88,15 @@ const DynamicDropdowns = () => {
 
         fetch("https://xdwvg9no7pefghrn.us-east-1.aws.endpoints.huggingface.cloud", requestOptions)
             .then(response => response.text())
-            .then(result => console.log(result))
-            .catch(error => console.log('error', error));
+            .then(blob => {
+                const url = URL.createObjectURL(blob); // Create a URL from the blob
+                setImageUrl(url); // Update the state with the new URL
+                setLoading(false); // Stop loading after the image is processed
+            })
+            .catch(error => {
+                console.log('error', error);
+                setLoading(false); // Stop loading in case of error
+            });
     };
 
     const dropdownItems = Array.from({ length: charCount }, (_, i) => i + 1);
@@ -145,6 +156,8 @@ const DynamicDropdowns = () => {
                     onClick={handleImage}>
                     Generate Image
                 </Button>
+                {loading && <CircularProgress />}
+                {imageUrl && <img src={imageUrl} alt="Generated Content" style={{ maxWidth: '100%', height: 'auto' }} />}
             </div>
             <div style={styles.rightPanel}>
                 {/* Right side: Script-like Display */}
